@@ -1,2 +1,2 @@
-from mathchem import *
-from utilities import *
+from .mathchem import *
+from .utilities import *
