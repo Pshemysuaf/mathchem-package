@@ -53,7 +53,8 @@ def read_from_sdf(fname, hydrogens=False):
 
     while True:
         m = _read_sdf_molecule(f_in, hydrogens)
-        if m == False: break
+        if m == False:
+            break
         mols.append(m)
 
     f_in.close()
@@ -71,6 +72,10 @@ def read_from_mol(fname, hydrogens=False):
 
     f_in.close()
     return m
+
+
+def read_from_open_file(mol_file, hydrogens=False):
+    return _read_sdf_molecule(mol_file, hydrogens)
 
 
 def read_from_mol2(fname, hydrogens=False):
@@ -221,29 +226,33 @@ def all_adriatic():
 def adriatic_name(p, i, j, a):
     """ Return the name for given parameters of Adriatic indices"""
     # (j)
-    name1 = {1: 'Randic type ', \
-             2: 'sum ', \
-             3: 'inverse sum ', \
-             4: 'misbalance ', \
-             5: 'inverse misbalance ', \
-             6: 'min-max ', \
-             7: 'max-min ', \
-             8: 'symmetric division '}
+    name1 = {
+        1: 'Randic type ',
+         2: 'sum ',
+         3: 'inverse sum ',
+         4: 'misbalance ',
+         5: 'inverse misbalance ',
+         6: 'min-max ',
+         7: 'max-min ',
+         8: 'symmetric division '
+    }
     # (i,a)
-    name2 = {(1, 0.5): 'lor', \
-             (1, 1): 'lo', \
-             (1, 2): 'los', \
-             (2, -1): 'in', \
-             (2, -0.5): 'ir', \
-             (2, 0.5): 'ro', \
-             (2, 1): '', \
-             (2, 2): 's', \
-             (3, 0.5): 'ha', \
-             (3, 2): 'two'}
+    name2 = {
+        (1, 0.5): 'lor',
+        (1, 1): 'lo',
+        (1, 2): 'los',
+        (2, -1): 'in',
+        (2, -0.5): 'ir',
+        (2, 0.5): 'ro',
+        (2, 1): '',
+        (2, 2): 's',
+        (3, 0.5): 'ha',
+        (3, 2): 'two'
+    }
     # (p)
     name3 = {0: 'deg', 1: 'di'}
 
-    return (name1[j] + name2[(i, a)] + name3[p])
+    return name1[j] + name2[(i, a)] + name3[p]
 
 
 def spectral_moment(k, matrix):
@@ -295,7 +304,8 @@ def _read_from_NCI(url, hydrogens=False):
     mols = []
     while True:
         m = _read_sdf_molecule(f, hydrogens)
-        if m == False: break
+        if m is False:
+            break
         mols.append(m)
     f.close()
 
@@ -311,8 +321,8 @@ def _read_sdf_molecule(file, hydrogens=False):
         file.readline()
     line = file.readline()
 
-    if line == '': return False
-
+    if line == '':
+        return False
     # this does not work for 123456 which must be 123 and 456
     # (atoms, bonds) = [t(s) for t,s in zip((int,int),line.split())]
     atoms = int(line[:3])
@@ -320,16 +330,16 @@ def _read_sdf_molecule(file, hydrogens=False):
 
     order = atoms
 
-    v = [];
+    v = []
 
     for i in range(atoms):
         line = file.readline()
         symbol = line.split()[3]
 
-        if hydrogens == False and (symbol == 'H' or symbol == 'h'):
+        if hydrogens is False and (symbol == 'H' or symbol == 'h'):
             order = order - 1
         else:
-            v.append(i + 1);
+            v.append(i + 1)
 
     # fill the matrix A zeros
     A = [[0 for col in range(order)] for row in range(order)]
@@ -349,7 +359,7 @@ def _read_sdf_molecule(file, hydrogens=False):
             A[j][k] = 1
             edges.append((k, j))
 
-    while line != '':
+    while line:
         line = file.readline()
         if line[:4] == "$$$$": break
 
@@ -357,7 +367,6 @@ def _read_sdf_molecule(file, hydrogens=False):
     m._set_A(A)
     m._set_Order(order)
     m._set_Edges(edges)
-
     return m
 
 
@@ -370,7 +379,8 @@ def _read_mol2_molecule(file, hydrogens=False):
         if line.strip() == '@<TRIPOS>MOLECULE': break
         line = file.readline()
 
-    if line == '': return False
+    if line == '':
+        return False
     # skip molecule name
     file.readline()
 
@@ -385,12 +395,13 @@ def _read_mol2_molecule(file, hydrogens=False):
 
     order = atoms
 
-    v = [];
+    v = []
 
     # seek for ATOM tag
     line = file.readline()
     while line != '':
-        if line.strip() == '@<TRIPOS>ATOM': break
+        if line.strip() == '@<TRIPOS>ATOM':
+            break
         line = file.readline()
 
     for i in range(atoms):
@@ -399,10 +410,10 @@ def _read_mol2_molecule(file, hydrogens=False):
         id = int(arr[0])
         symbol = arr[4]
 
-        if hydrogens == False and (symbol == 'H' or symbol == 'h'):
+        if hydrogens is False and (symbol in {'H', 'h'}):
             order = order - 1
         else:
-            v.append(id);
+            v.append(id)
 
     # fill the matrix A zeros
     A = [[0 for col in range(order)] for row in range(order)]
@@ -414,7 +425,8 @@ def _read_mol2_molecule(file, hydrogens=False):
         if line.strip() == '@<TRIPOS>BOND': break
         line = file.readline()
 
-    if line == '': return False
+    if line == '':
+        return False
 
     for i in range(bonds):
         line = file.readline()
@@ -434,4 +446,3 @@ def _read_mol2_molecule(file, hydrogens=False):
     m._set_Edges(edges)
 
     return m
-
